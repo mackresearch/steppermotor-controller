@@ -16,3 +16,8 @@ Open up another terminal instance and run the following command to start up the 
 > source bin/activate
 
 Now you can start up the app using the python command
+
+Pi Connnect
+https://connect.raspberrypi.com/
+jack@mack-research.com
+Leafgen5678
