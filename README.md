@@ -18,7 +18,6 @@ Open up another terminal instance and run the following command to start up the 
 `source bin/activate`
 
 ### Below are credentials to connect to the Pi 
-Pi Connnect<br/>
 https://connect.raspberrypi.com/<br/>
 jack@mack-research.com<br/>
 Leafgen5678
