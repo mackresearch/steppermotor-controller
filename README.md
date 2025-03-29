@@ -22,24 +22,24 @@ One step = 1.8 degrees
 
 Full rotation (360 degrees) = 200 steps
 
-<b>Motorkit Documentation</b>
+<b>Stepper Motor API Documentation</b> -
 
 https://docs.circuitpython.org/projects/motorkit/en/latest/
 
 https://github.com/adafruit/Adafruit_CircuitPython_MotorKit?tab=readme-ov-file
 
+https://docs.circuitpython.org/projects/motor/en/latest/api.html#adafruit-motor-stepper
 
-### Stepper Motor Parameter Definitions
-step_distance: determines how many steps the motor moves in either direction; each step is 1.8 degrees and 200 steps is 360 degrees
 
-step_time: amount of time the leaf will wait before it moves into its downstroke position
+### Stepper Motor Parameter 
+<b>step_time</b>: amount of time the leaf will wait before it moves into its downstroke position
 
-loop_limit: amount of time it performs a full upstroke and downstroke
+<b>loop_limit</b>: amount of time it performs a full upstroke and downstroke
 
-upstroke_count: amount of steps to move the leaf upwards
+<b>upstroke_count</b>: amount of steps to move the leaf upwards
 
-downstroke_count: amount of steps to move the leaf downwards
+<b>downstroke_count</b>: amount of steps to move the leaf downwards
 
-upstroke_wait_time: duration in which the leaf waits after it has moved upwards
+<b>upstroke_wait_time</b>: duration in which the leaf waits after it has moved upwards
 
-downstroke_wait_time: duration in which the leaf waits after is has moved downwards
+<b>downstroke_wait_time</b>: duration in which the leaf waits after is has moved downwards

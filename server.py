@@ -9,7 +9,7 @@ PORT = 12345
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen(1)  # Allow only one client for now
-worker_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "worker.py")
+worker_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "steppermotor.py")
 
 print("Waiting for a connection...")
 conn, addr = server_socket.accept()
@@ -29,10 +29,11 @@ while True:
         print(f"Received data: {received_data}")
 
         # Process fields
-        command1 = received_data.get("step_distance", "")
-        command2 = received_data.get("step_time", "")
-        command3 = received_data.get("step_limit", "")
-        command4 = received_data.get("step_count", "")
+        command1 = received_data.get("upward_strokes", "")
+        command2 = received_data.get("upward_strokes_wait_time", "")
+        command3 = received_data.get("downward_strokes", "")
+        command4 = received_data.get("downward_strokes_wait_time", "")
+        command5 = received_data.get("cycle_interation_count", "")
 
         print(f"Processing Command 1: {command1}")
         print(f"Processing Command 2: {command2}")
