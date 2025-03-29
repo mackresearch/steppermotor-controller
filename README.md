@@ -43,3 +43,4 @@ downstroke_count: amount of steps to move the leaf downwards
 upstroke_wait_time: duration in which the leaf waits after it has moved upwards
 
 downstroke_wait_time: duration in which the leaf waits after is has moved downwards
+
