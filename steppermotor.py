@@ -19,7 +19,11 @@ def process_data(data):
     downstroke_wait_time = data.get("downward_strokes_wait_time")
     loop_limit = data.get("cycle_interation_count")
 
-# this is used when the script is executed directly rather than being imported as a module, and specifies that the following code should execute only if the script is executed directly
+def simAppRun():
+    while(True):
+        print("simming app run...")
+
+# this is used when the script is executed directly rather than being imported as a modul.it specifies that the following code should execute only if the script is executed directly
 # when the script is executed directly the special __name__ variable in Python sets this value to "__main__"
 if __name__ == "__main__":
     # Read JSON input from the command-line arguments
@@ -27,7 +31,7 @@ if __name__ == "__main__":
     # the first element (sys.argv[0]) is always the script name
     if len(sys.argv) > 1:
         try:
-            data = json.loads(sys.argv[1])  # Convert argument to dictionary;
+            data = json.loads(sys.argv[1])  # convert argument to dictionary
         except json.JSONDecodeError:
             print("Error: Invalid JSON input")
     else:
@@ -35,7 +39,10 @@ if __name__ == "__main__":
         sys.exit()
 
     process_data(data)
+    simAppRun()
 
     while interation_count  < loop_limit:
         print("executing process loop")
         interation_count += 1
+
+sys.exit()

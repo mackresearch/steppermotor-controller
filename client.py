@@ -9,18 +9,15 @@ PORT = 12345
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((HOST, PORT))
 
-def send_input():
-    data = {
-        "upward_strokes": entry1.get(),
-        "upward_strokes_wait_time": entry2.get(),
-        "downward_strokes": entry3.get(),
-        "downward_strokes_wait_time": entry4.get(),
-        "cycle_interation_count": entry5
-    }
-
+def send_input(data):
     message = json.dumps(data)
     client_socket.sendall(message.encode())  # Send data through the open connection
     print(f"Sent: {message}")
+
+def reset(data):
+    data["reset"] = True
+    send_input(data)
+    
 
 # GUI Setup
 root = tk.Tk()
@@ -28,26 +25,36 @@ root.title("Stepper Motor Controller")
 root.geometry("400x300")
 
 tk.Label(root, text="Upward Strokes:").pack()
-entry1 = tk.Entry(root)
-entry1.pack(expand=True)
+upward_stroke = tk.Entry(root)
+upward_stroke.pack(expand=True)
 
 tk.Label(root, text="Upward Stroke Wait Time:").pack()
-entry2 = tk.Entry(root)
-entry2.pack(expand=True)
+upward_stroke_wait_time = tk.Entry(root)
+upward_stroke_wait_time.pack(expand=True)
 
-tk.Label(root, text="Downwar Strokes:").pack()
-entry3 = tk.Entry(root)
-entry3.pack(expand=True)
+tk.Label(root, text="Downward Strokes:").pack()
+downward_stroke = tk.Entry(root)
+downward_stroke.pack(expand=True)
 
 tk.Label(root, text="Downward Stroke Wait Time:").pack()
-entry4 = tk.Entry(root)
-entry4.pack(expand=True)
+downward_stroke_wait_time = tk.Entry(root)
+downward_stroke_wait_time.pack(expand=True)
 
 tk.Label(root, text="Cycle Iteration Count:").pack()
-entry5 = tk.Entry(root)
-entry5.pack(expand=True)
+cycle_interations = tk.Entry(root)
+cycle_interations.pack(expand=True)
 
-tk.Button(root, text="Submit", command=send_input).pack(pady=(10, 20))
+data = {
+        "upward_strokes": upward_stroke.get(),
+        "upward_strokes_wait_time": upward_stroke_wait_time.get(),
+        "downward_strokes": downward_stroke.get(),
+        "downward_strokes_wait_time": downward_stroke_wait_time.get(),
+        "cycle_interation_count": cycle_interations.get(),
+        "reset": False
+    }
+
+tk.Button(root, text="Submit", command=lambda: send_input(data)).pack(pady=(10, 20))
+tk.Button(root, text="Reset", command=lambda: reset(data)).pack(pady=(10, 20))
 
 root.mainloop()
 

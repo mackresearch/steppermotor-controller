@@ -9,7 +9,8 @@ PORT = 12345
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen(1)  # Allow only one client for now
-worker_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "steppermotor.py")
+worker_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "worker.py")
+process = None
 
 print("Waiting for a connection...")
 conn, addr = server_socket.accept()
@@ -25,23 +26,30 @@ while True:
 
     try:
         received_data = json.loads(data)
+        print(f"data received by server - reset value is: {received_data.get("reset")}")
+        # check reset switch
+        if received_data.get("reset") == True:
+            print("terminating script now...")
+            process.terminate()
+            stdout, stderr = process.communicate()
+            process.wait()
+            print(f"process finished with exit code: {process.poll()}")
+            print("standard output:")
+            print(stdout.decode())
+            print("standard error:")
+            print(stderr.decode())
+            print("successfully terminated process") if process.poll() is None else print("issue with terminating process")
+        else:
+            print(f"Received data: {received_data}")
 
-        print(f"Received data: {received_data}")
+            # Process fields
+            command1 = received_data.get("upward_strokes", "")
+            command2 = received_data.get("upward_strokes_wait_time", "")
+            command3 = received_data.get("downward_strokes", "")
+            command4 = received_data.get("downward_strokes_wait_time", "")
+            command5 = received_data.get("cycle_interation_count", "")
 
-        # Process fields
-        command1 = received_data.get("upward_strokes", "")
-        command2 = received_data.get("upward_strokes_wait_time", "")
-        command3 = received_data.get("downward_strokes", "")
-        command4 = received_data.get("downward_strokes_wait_time", "")
-        command5 = received_data.get("cycle_interation_count", "")
-
-        print(f"Processing Command 1: {command1}")
-        print(f"Processing Command 2: {command2}")
-        print(f"Processing Command 3: {command3}")
-        print(f"Processing Command 3: {command4}")
-
-        subprocess.run(["python", worker_path, json.dumps(received_data)], shell=True)
-
+            process = subprocess.Popen(["python",worker_path, json.dumps(received_data)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     except json.JSONDecodeError:
         print("Invalid JSON received!")
 
