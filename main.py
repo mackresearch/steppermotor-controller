@@ -25,6 +25,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         self.default_param3_placeholder_text = "param 3"
         self.default_param4_placeholder_text = "param 4"
         self.widget_width = 300
+        self.invalid_input_msg = "NUMBERS ONLY DUMBASS"
 
         self.setWindowTitle("LeafGen Stepper Motor Controller")
         self.resize(900, 600)
@@ -35,15 +36,28 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         self.text_output.setPlaceholderText("output...")
 
         # create labels
+        # hide invalid input labels upon startup
         self.param1_label = QLabel("param1")
+        self.invalid_input_label1 = QLabel(self.invalid_input_msg)
+        self.invalid_input_label1.setVisible(False)
+
         self.param2_label = QLabel("param2")
+        self.invalid_input_label2 = QLabel(self.invalid_input_msg)
+        self.invalid_input_label2.setVisible(False
+                                              )
         self.param3_label = QLabel("param3")
+        self.invalid_input_label3 = QLabel(self.invalid_input_msg)
+        self.invalid_input_label3.setVisible(False)
+
         self.param4_label = QLabel("param4")
+        self.invalid_input_label4 = QLabel(self.invalid_input_msg)
+        self.invalid_input_label4.setVisible(False)
 
         # create user input fields
         self.param1 = QLineEdit()
         self.param1._connected_init_stepper_motor_slot = False
         self.param1._connected_update_child_process_slot = False
+        self.param1._connected_validate_input_slot = True
         self.param1.setPlaceholderText(self.default_param1_placeholder_text)
         self.param1.setValidator(QIntValidator())
         self.param1.setFixedWidth(self.widget_width)
@@ -52,7 +66,8 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         self.param2 = QLineEdit()
         self.param2._connected_init_stepper_motor_slot = False
         self.param2._connected_update_child_process_slot = False
-        self.param2.setPlaceholderText(self.default_param3_placeholder_text)
+        self.param2._connected_validate_input_slot = True
+        self.param2.setPlaceholderText(self.default_param2_placeholder_text)
         self.param2.setValidator(QIntValidator())
         self.param2.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.param2.setFixedWidth(self.widget_width)
@@ -60,6 +75,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         self.param3 = QLineEdit()
         self.param3._connected_init_stepper_motor_slot = False
         self.param3._connected_update_child_process_slot = False
+        self.param3._connected_validate_input_slot = True
         self.param3.setPlaceholderText(self.default_param3_placeholder_text)
         self.param3.setValidator(QIntValidator())
         self.param3.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -68,10 +84,28 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         self.param4 = QLineEdit()
         self.param4._connected_init_stepper_motor_slot = False
         self.param4._connected_update_child_process_slot = False
+        self.param4._connected_validate_input_slot = True
         self.param4.setPlaceholderText(self.default_param4_placeholder_text)
         self.param4.setValidator(QIntValidator())
         self.param4.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.param4.setFixedWidth(self.widget_width)
+
+        # create map of invalid input labels
+        self.invalid_input_labels_map = {
+            self.param1: self.invalid_input_label1,
+            self.param2: self.invalid_input_label2,
+            self.param3: self.invalid_input_label3,
+            self.param4: self.invalid_input_label4
+        }
+
+        self.invalid_labels_list = [
+            self.invalid_input_label1,
+            self.invalid_input_label2,
+            self.invalid_input_label3,
+            self.invalid_input_label4
+        ]
+        for invalid_lable in self.invalid_labels_list:
+            invalid_lable.setStyleSheet("color: red;")
 
         # grouping all QLineEdits to better connect signals
         self.input_fields_list = [self.param1, self.param2, self.param3, self.param4]
@@ -92,25 +126,43 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         self.start_btn.clicked.connect(self.init_stepper_motor_sim)
         self.stop_btn.clicked.connect(lambda: self.stop_child_process(False))
         self.update_btn.clicked.connect(self.update_child_process)
+
         self.param4.returnPressed.connect(lambda: self.param4.clearFocus())
         for field in self.input_fields_list:
+            # we need to set up two signals for toggling the display message becau4se the QIntValidator
+            # filters key presses that aren't numbers before they reach the QLineEdit meaning the
+            # textChanged event will never fire. the inputReject event will emit a signal when it doesn't 
+            # follow the rules set by the QIntValidator however it doesn't have a True/False flag so 
+            # the textChanged listens to anything that is a number to hide the err msg
+            # basically the inputRejected event it will signal its connected slow when invalid input's entered
+            # and the textChanged event will signal its connected slot when valid input is entered
+            field.inputRejected.connect(self.validate_invalid_input)
+            # the textChanged event implicitly sends in the text as an argument to the connected function
+            # meaning the connected slot's signature needs to add an extra parameter or else it'll throw
+            # a runtime error
+            field.textChanged.connect(self.validate_valid_input)
             field.returnPressed.connect(self.init_stepper_motor_sim)
             field._connected_init_stepper_motor_slot = True
+            
 
         # create layout of window and add widgets
         layout = QVBoxLayout()
         layout.addWidget(self.text_output)  # adds output textbox to layout
         
         layout.addWidget(self.param1_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.invalid_input_label1, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.param1, alignment=Qt.AlignmentFlag.AlignCenter)   # adds user input field to layout
 
         layout.addWidget(self.param2_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.invalid_input_label2, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.param2, alignment=Qt.AlignmentFlag.AlignCenter)   # adds user input field to layout
 
         layout.addWidget(self.param3_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.invalid_input_label3, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.param3, alignment=Qt.AlignmentFlag.AlignCenter)   # adds user input field to layout
 
         layout.addWidget(self.param4_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.invalid_input_label4, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.param4, alignment=Qt.AlignmentFlag.AlignCenter)   # adds user input field to layout
         
         layout.addWidget(self.start_btn, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -135,6 +187,19 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         msg_box.setText("all params required to update the stepper motor")
         msg_box.setWindowTitle("Error")
         msg_box.show()
+
+    def validate_valid_input(self, text):
+        line_edit_caller = self.sender()
+        # the validator() function returns the validator that is set on the QLineEdit
+        # the validate(str: text, int: pos)
+            # this takes the first param text, and validates the char at the given position
+            # then returns a tuple [QValidate.State, str, int]
+        state = line_edit_caller.validator().validate(text, 0)[0]
+        if state == QIntValidator.State.Acceptable and text != "":
+            self.invalid_input_labels_map[line_edit_caller].setVisible(False)
+
+    def validate_invalid_input(self):
+        self.invalid_input_labels_map[self.sender()].setVisible(True)
     
     @asyncSlot()
     async def init_stepper_motor_sim(self):
