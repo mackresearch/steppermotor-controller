@@ -62,7 +62,7 @@ async def start_stepper_motor(shutdown_event: asyncio.Event, parameters_map: dic
             sys.stdout.write(f"{logger_identifer} upstroke step count: {i}\n")
             motorkit.stepper2.onestep(style=stepper.DOUBLE)
             # needed to give the stepper motor time to move
-            await asyncio.sleep(1)
+            await asyncio.sleep(.5)
 
         # DELAY BEFORE MOVING FROM UPWARDS -> DOWNWARDS
         sys.stdout.write(f"{logger_identifer} waiting for {parameters_map.get(constants.DOWNSTROKE_DELAY)} secs before moving downwards\n")
@@ -70,10 +70,12 @@ async def start_stepper_motor(shutdown_event: asyncio.Event, parameters_map: dic
 
         # MOVES STEPPER MOTOR DOWNWARDS
             # need to determine if thi is BACKWARDS/FORWARDS
-        sys.stdout.write(f"{logger_identifer} start of downard strokes\n")
-        for i in range(constants.DOWNSTROKE_STEPS):
+        sys.stdout.write(f"{logger_identifer} start of downward strokes\n")
+        for i in range(parameters_map.get(constants.DOWNSTROKE_STEPS)):
             sys.stdout.write(f"{logger_identifer} downstroke step count: {i}\n")
             motorkit.stepper2.onestep(style=stepper.DOUBLE, direction=stepper.BACKWARD)
+            # needed to give the stepper motor time to move
+            await asyncio.sleep(.5)
 
     # TODO: write logic to set the shutdown event and tell the parent process that this child process is complete
     # so it it can reset the UI widgets
