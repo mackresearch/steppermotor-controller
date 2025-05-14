@@ -1,0 +1,6 @@
+STEP_TIME = "step time"
+ITERATIONS = "iterations"
+UPSTROKE_STEPS = "upstroke steps"
+DOWNSTROKE_STEPS = "downstroke steps"
+UPSTROKE_DELAY = "upstroke delay"
+DOWNSTROKE_DELAY = "downstroke delay"
