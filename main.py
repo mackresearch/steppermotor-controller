@@ -380,9 +380,14 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         while True:
             process_output = await self.stepper_motor_process.stdout.readline()
                 # this is needed bc when we close the child process it returns an empty bytes object (b'') which signals the EOF and then we can break out of the while loop then throw the exception to cancel this coroutine
+            
             if not process_output:
                 break
-            self.text_output.append(process_output.decode().rstrip())
+            
+            if process_output.decode().rstrip() == constants.CMD_COMPLETE:
+                print(f"DEBUG - {constants.CMD_COMPLETE} received")
+            else:
+                self.text_output.append(process_output.decode().rstrip())
 
         # since this task is always listening to the child process we need to manually throw the CancelledError
         # exception to ensure it is cancelled correctly
