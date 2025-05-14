@@ -43,3 +43,4 @@ https://docs.circuitpython.org/projects/motor/en/latest/api.html#adafruit-motor-
 <b>upstroke_wait_time</b>: duration in which the leaf waits after it has moved upwards
 
 <b>downstroke_wait_time</b>: duration in which the leaf waits after is has moved downwards
+
