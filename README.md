@@ -1,10 +1,9 @@
 # steppermotor-controller
 
 ### Start Up Instructions
-When you are on the Pi you will need to navigate to `/home/admin/steppermotor/steppermotor_venv` to activate the virtual Python environment. Then come back to this directory to start the application.
+A Python virtual environment (venv) will need to be spun up for this application to run successfully. To spin up the venv that corresponds to this app, run this command in a terminal session `source /home/admin/steppermotor/steppermotor_venv/bin/activate`
 
-To start a virtual environment use the following command 
-> `source venv/bin/activate`
+After the virtual environment is has been spun up, go to  `/home/admin/steppermotor/stepper_motor_controller_gui` to run the application by running `python main.py`
 
 ### Stepper Motor Specifics
 One step = 1.8 degrees
@@ -20,7 +19,12 @@ https://github.com/adafruit/Adafruit_CircuitPython_MotorKit?tab=readme-ov-file
 https://docs.circuitpython.org/projects/motor/en/latest/api.html#adafruit-motor-stepper
 
 <b> How To Turn On Camera </b> -
+To turn on the camera run the following command in its own separate terminal session  `qv4l2`
+
+> The command is Q V 4 L 2, the l is not a capital 'i', its a lowercase L
+
 https://docs.arducam.com/UVC-Camera/Quick-Start-Guide%28USB2%29/Linux/#install-v4l-utility-packages
+
 
 
 ### Stepper Motor Parameter 
