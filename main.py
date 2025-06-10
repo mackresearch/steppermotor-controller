@@ -145,7 +145,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         self.stop_btn = QPushButton("stop")
         self.stop_btn.setEnabled(False)
         self.stop_btn.setFixedWidth(self.widget_width)
-        
+       
         # connect signals
         self.start_btn.clicked.connect(self.init_stepper_motor)
         self.stop_btn.clicked.connect(lambda: self.stop_child_process(False))
@@ -159,7 +159,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         # create layout of window and add widgets
         layout = QVBoxLayout()
         layout.addWidget(self.text_output)
-        
+       
         layout.addWidget(self.label_step_time, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.err_label_step_time, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.input_step_time, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -183,7 +183,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         layout.addWidget(self.label_downstroke_wait_time, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.err_label_downstroke_delay, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.input_downstroke_wait_time, alignment=Qt.AlignmentFlag.AlignCenter)
-        
+       
         layout.addWidget(self.start_btn, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.update_btn, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.stop_btn, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -199,7 +199,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         print(f"{self.sender().objectName()}")
         # if the input is not a character display the err label
         # if the user input is a character hide the err label
-        
+       
     def display_no_start_values_message(self):
         msg_box = QMessageBox(self)
         msg_box.setIcon(QMessageBox.Icon.Critical)
@@ -213,7 +213,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         msg_box.setText("all params required to update the stepper motor")
         msg_box.setWindowTitle("Error")
         msg_box.show()
-    
+   
     @asyncSlot()
     async def init_stepper_motor(self):
         self.start_btn.setEnabled(False)
@@ -236,7 +236,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
             self.display_no_start_values_message()
             self.start_btn.setEnabled(True)
             return
-        
+       
         self.stepper_motor_process = await create_subprocess_exec(
             sys.executable,
             '-u',
@@ -245,7 +245,13 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
+            
         )
+
+        stdout, stderr = await self.stepper_motor_process.communicate()
+        if self.stepper_motor_process.returncode != 0:
+            error_output = stderr.decode().strip()
+            raise RuntimeError(f"{SCRIPT_PATH} failed with (code {self.stepper_motor_process.returncode}):\n{error_output}")
 
         self.read_child_output_task = asyncio.create_task(self.read_child_output())
 
@@ -261,7 +267,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
 
         self.input_downstroke_steps.clear()
         self.input_downstroke_steps.setPlaceholderText(f"downstroke steps {downstroke_steps}")
-        
+       
         self.input_upstroke_wait_time.clear()
         self.input_upstroke_wait_time.setPlaceholderText(f"upstroke wait time =  {upstroke_wait_time}s")
         self.input_downstroke_wait_time.clear()
@@ -297,7 +303,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
                     print(f"{self.script_log_identifier} TASK NOT CANCELLED CORRECTLY")
 
             self.read_child_output_task = None
-    
+   
     @asyncSlot()
     async def stop_child_process(self, is_update: bool):
         print(f"{logger_identifier} - stop command received")
@@ -327,7 +333,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
 
             self.input_step_time.clear() if is_update == False else None
             self.input_step_time.setPlaceholderText(self.default_placeholder_text_step_time)
-    
+   
             self.input_iterations.clear() if is_update == False else None
             self.input_iterations.setPlaceholderText(self.default_placeholder_text_iterations)
 
@@ -364,7 +370,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
             self.display_no_update_values_message()
             self.update_btn.setEnabled(True)
             return
-        
+       
         # stop process before restarting with new params
         await self.stop_child_process(True)
         print(f"{self.script_log_identifier} stepper motor stopped")
@@ -375,19 +381,14 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         await self.init_stepper_motor()
 
         print(f"{self.script_log_identifier} stepper motor restarted")
-        
+       
     async def read_child_output(self):
         while True:
             process_output = await self.stepper_motor_process.stdout.readline()
                 # this is needed bc when we close the child process it returns an empty bytes object (b'') which signals the EOF and then we can break out of the while loop then throw the exception to cancel this coroutine
-            
             if not process_output:
                 break
-            
-            if process_output.decode().rstrip() == constants.CMD_COMPLETE:
-                print(f"DEBUG - {constants.CMD_COMPLETE} received")
-            else:
-                self.text_output.append(process_output.decode().rstrip())
+            self.text_output.append(process_output.decode().rstrip())
 
         # since this task is always listening to the child process we need to manually throw the CancelledError
         # exception to ensure it is cancelled correctly
@@ -411,6 +412,6 @@ if __name__ == "__main__":
     asyncio.set_event_loop(event_loop)   # we set the event loop for pythons/asyncio's default event loop to be our instance of QEventLoop
     window = SMControllerMainWindow()
     window.show()
-    
+   
     with event_loop:
         event_loop.run_forever()

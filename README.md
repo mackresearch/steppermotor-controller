@@ -1,21 +1,10 @@
 # steppermotor-controller
 
 ### Start Up Instructions
-The server needs to be started before the client starts or else the client will have nothing to connect to and will fail.
+When you are on the Pi you will need to navigate to `/home/admin/steppermotor/steppermotor_venv` to activate the virtual Python environment. Then come back to this directory to start the application.
 
-To start up the server run the following command -
-> python server.py
-
-Open up another terminal instance and run the following command to start up the client -
-> python client.py
-
-### Start Up Virtual Python Env (venv)
-1. Open up steppermotor folder (project folder)
-2. Open steppermotor_venv folder
-3. Run the following command -
-> source bin/activate
-
-Now you can start up the app using the python command
+To start a virtual environment use the following command 
+> `source venv/bin/activate`
 
 ### Stepper Motor Specifics
 One step = 1.8 degrees
@@ -29,6 +18,9 @@ https://docs.circuitpython.org/projects/motorkit/en/latest/
 https://github.com/adafruit/Adafruit_CircuitPython_MotorKit?tab=readme-ov-file
 
 https://docs.circuitpython.org/projects/motor/en/latest/api.html#adafruit-motor-stepper
+
+<b> How To Turn On Camera </b> -
+https://docs.arducam.com/UVC-Camera/Quick-Start-Guide%28USB2%29/Linux/#install-v4l-utility-packages
 
 
 ### Stepper Motor Parameter 
