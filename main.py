@@ -246,10 +246,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        stdout, stderr = await self.stepper_motor_process.communicate()
-        if self.stepper_motor_process.returncode != 0:
-            error_output = stderr.decode().strip()
-            raise RuntimeError(f"{SCRIPT_PATH} failed with (code {self.stepper_motor_process.returncode}):\n{error_output}")
+        self.read_stderr_task = asyncio.create_task(self.read_stderr())
 
         self.read_child_output_task = asyncio.create_task(self.read_child_output())
 
@@ -379,6 +376,17 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         await self.init_stepper_motor()
 
         print(f"{self.script_log_identifier} stepper motor restarted")
+
+    async def read_stderr(self):
+        self.stderr_lines = []
+        while True:
+            line = await self.stepper_motor_process.stderr.readline()
+            if not line:
+                break
+            decoded = line.decode(errors='replace').strip()
+            self.stderr_lines.append(decoded)
+            print(f"[stderr] {decoded}", file=sys.stderr)
+            raise RuntimeError(f"Child process stderr output detected:\n{decoded}")
        
     async def read_child_output(self):
         while True:
@@ -391,6 +399,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         # since this task is always listening to the child process we need to manually throw the CancelledError
         # exception to ensure it is cancelled correctly
         raise asyncio.CancelledError()
+    
 
     @asyncSlot()    # this decorator is only used for async slots
     async def send_input(self):
