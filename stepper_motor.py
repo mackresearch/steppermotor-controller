@@ -5,6 +5,7 @@ import constants
 from adafruit_motorkit import MotorKit
 from adafruit_motor import stepper
 import board
+import traceback
 
 motorkit = MotorKit(i2c=board.I2C())
 logger_identifer = "[stepper-motor.py] -"
@@ -37,16 +38,20 @@ def map_parameters(params_list):
     return {key: int(value) for key, value in zip(keys_list, params_list)}
 
 async def parameter_listener():
-    sys.stdout.write(f"{logger_identifer} input received: {build_params_string(json.loads(sys.argv[1]))}\n")
+    try:
+        sys.stdout.write(f"{logger_identifer} input received: {build_params_string(json.loads(sys.argv[1]))}\n")
 
-    params_map = map_parameters(json.loads(sys.argv[1]))
+        params_map = map_parameters(json.loads(sys.argv[1]))
 
-    shutdown_event = asyncio.Event()
-    async with asyncio.TaskGroup() as tg:
-        tg.create_task(start_stepper_motor(shutdown_event, params_map))
-        tg.create_task(watch_for_commands_threaded(shutdown_event))
-   
-    print(f"{logger_identifer} all scheduled tasks complete")
+        shutdown_event = asyncio.Event()
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(start_stepper_motor(shutdown_event, params_map))
+            tg.create_task(watch_for_commands_threaded(shutdown_event))
+    
+        print(f"{logger_identifer} all scheduled tasks complete")
+    except Exception as e:
+        sys.stderr.write(f"Error in parameter_listener: {e}\n")
+        traceback.print_exc(file=sys.stderr)
 
 async def start_stepper_motor(shutdown_event: asyncio.Event, parameters_map: dict[str, int]):
     current_iteration = 0
