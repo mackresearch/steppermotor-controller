@@ -38,7 +38,6 @@ def map_parameters(params_list):
 
 async def parameter_listener():
     sys.stdout.write(f"{logger_identifer} input received: {build_params_string(json.loads(sys.argv[1]))}\n")
-
     params_map = map_parameters(json.loads(sys.argv[1]))
 
     shutdown_event = asyncio.Event()
@@ -50,31 +49,33 @@ async def parameter_listener():
 
 async def start_stepper_motor(shutdown_event: asyncio.Event, parameters_map: dict[str, int]):
     current_iteration = 0
-
     sys.stdout.write(f"{logger_identifer} starting stepper motor\n"
                      f"step time: {parameters_map.get(constants.STEP_TIME)}\n"
                      f"iterations: {parameters_map.get(constants.ITERATIONS)}\n")
        
     while current_iteration < parameters_map.get(constants.ITERATIONS) and not shutdown_event.is_set():
         current_iteration += 1
-
         # MOVES STEPPER MOTOR UPWARDS
+            # need to determine if this is BACKWARDS/FORWARDS
         sys.stdout.write(f"{logger_identifer} start of upward strokes\n")
         for i in range(parameters_map.get(constants.UPSTROKE_STEPS)):
             sys.stdout.write(f"{logger_identifer} upstroke step count: {i}\n")
             motorkit.stepper2.onestep(style=stepper.DOUBLE)
-            await asyncio.sleep(.5) # need to give the motor time to move
+            # needed to give the stepper motor time to move
+            await asyncio.sleep(.5)
 
         # DELAY BEFORE MOVING FROM UPWARDS -> DOWNWARDS
         sys.stdout.write(f"{logger_identifer} waiting for {parameters_map.get(constants.DOWNSTROKE_DELAY)} secs before moving downwards\n")
         await asyncio.sleep(parameters_map.get(constants.DOWNSTROKE_DELAY))
 
         # MOVES STEPPER MOTOR DOWNWARDS
+            # need to determine if thi is BACKWARDS/FORWARDS
         sys.stdout.write(f"{logger_identifer} start of downward strokes\n")
         for i in range(parameters_map.get(constants.DOWNSTROKE_STEPS)):
             sys.stdout.write(f"{logger_identifer} downstroke step count: {i}\n")
             motorkit.stepper2.onestep(style=stepper.DOUBLE, direction=stepper.BACKWARD)
-            await asyncio.sleep(.5) # need to give the motor time to move
+            # needed to give the stepper motor time to move
+            await asyncio.sleep(.5)
 
     # TODO: write logic to set the shutdown event and tell the parent process that this child process is complete
     # so it it can reset the UI widgets
@@ -98,13 +99,9 @@ def listen(shutdown_event: asyncio.Event):
 
 async def watch_for_commands_threaded(shutdown_event):
     loop = asyncio.get_running_loop()
-    # run this blocking function in a threadpool and return a future to wait on
-    # waits for the result of the thread using a Future — when the thread finishes, the event loop picks up the result and resumes the await.
+    # run this blocking function in a threadpool and return a future i can wait on
+    # Waits for the result of the thread using a Future — when the thread finishes, the event loop picks up the result and resumes the await.
     await loop.run_in_executor(None, listen, shutdown_event)
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except Exception as e:
-        sys.stderr.write(f"{logger_identifer} FATAL ERROR: {e}\n")
-        sys.exit(1)
+    asyncio.run(main())
