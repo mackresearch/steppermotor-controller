@@ -246,6 +246,10 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
+        stdout, stderr = await self.stepper_motor_process.communicate()
+        if self.stepper_motor_process.returncode != 0:
+            error_output = stderr.decode().strip()
+            raise RuntimeError(f"{SCRIPT_PATH} failed with (code {self.stepper_motor_process.returncode}):\n{error_output}")
 
         self.read_child_output_task = asyncio.create_task(self.read_child_output())
 
