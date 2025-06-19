@@ -6,7 +6,9 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QTextEdit, QLineEdit,
     QPushButton, QMessageBox, QLabel
 )
-from PyQt6.QtGui import QIntValidator
+from PyQt6.QtGui import (
+    QIntValidator, QDoubleValidator
+)
 from qasync import QEventLoop, asyncSlot
 from asyncio.subprocess import create_subprocess_exec
 from pathlib import Path
@@ -27,6 +29,8 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         self.setWindowTitle("LeafGen Stepper Motor Controller")
         self.resize(900, 600)
         self.ERR_LABEL_MSG = "invalid input. only numbers are allowed."
+        self.float_validator = QDoubleValidator(0.0, 1.0, 2)
+        self.float_validator.setNotation(QDoubleValidator.Notation.StandardNotation)
 
         # default placehodler text values
         # step time - time the leaf will wait before it switches from the upward stroke the downward stroke
@@ -75,7 +79,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         self.input_step_time._connected_init_stepper_motor_slot = False
         self.input_step_time._connected_update_child_process_slot = False
         self.input_step_time.setPlaceholderText(self.default_placeholder_text_step_time)
-        self.input_step_time.setValidator(QIntValidator())
+        self.input_step_time.setValidator(self.float_validator)
         self.input_step_time.setFixedWidth(self.widget_width)
         self.input_step_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
