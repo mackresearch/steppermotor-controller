@@ -25,7 +25,7 @@ class SMControllerMainWindow(QMainWindow):  # we're extending the QMainWindow ob
         self.stop_command = "leafgen_stop_command"
         self.widget_width = 300
         self.setWindowTitle("LeafGen Stepper Motor Controller")
-        self.resize(900, 600)
+        self.resize(300, 600)
         self.ERR_LABEL_MSG = "invalid input. only numbers are allowed."
 
         # default placehodler text values
