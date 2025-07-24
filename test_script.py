@@ -6,10 +6,8 @@ import time
 motorkit = MotorKit(i2c=board.I2C())
 
 print("starting stepper motor")
-
 for i in range (475):
-    print(i)
     motorkit.stepper2.onestep(style=stepper.SINGLE)
-    time.sleep(.05)
+    time.sleep(.01)
 
 motorkit.stepper2.release()
