@@ -9,7 +9,7 @@ print("starting stepper motor")
 for i in range(200):
     motorkit.stepper2.onestep()
 
-time.sleep(2)
+time.sleep(2000)
 
 print("starting stepper motor")
 for i in range(200):
